@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>흑자 전환을 위한 인터랙티브 전략 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F7F3E3;
+            color: #262423;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 96;
+            max-height: 400px;
+            background-color: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link.active {
+            color: #B1A08D;
+            font-weight: 700;
+        }
+        .kpi-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .kpi-value {
+            font-size: 3rem;
+            font-weight: 900;
+        }
+        .kpi-label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #544E49;
+            margin-top: 0.5rem;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 2.5rem;
+            border-left: 3px solid #E2D5B6;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -3.2rem;
+            top: 0.25rem;
+            height: 1.25rem;
+            width: 1.25rem;
+            background-color: #B1A08D;
+            border-radius: 50%;
+            border: 3px solid #F7F3E3;
+        }
+        .risk-card {
+            background-color: #FFF8E7;
+            border-left: 4px solid #FFC107;
+        }
+        .custom-table {
+            width: 100%;
+            text-align: left;
+            border-collapse: collapse;
+        }
+        .custom-table th, .custom-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #E2D5B6;
+            font-size: 0.875rem;
+            vertical-align: middle;
+        }
+        .custom-table th {
+            font-weight: 700;
+            color: #544E49;
+        }
+        .custom-table tr:last-child th, .custom-table tr:last-child td {
+            border-bottom: none;
+        }
+        .profit-rate {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+        .loss-rate {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .highlight-col {
+            background-color: #F7F3E3;
+            font-weight: 700;
+        }
+        .simulation-table td {
+           padding: 0.5rem;
+           border-bottom: 1px solid #E2D5B6;
+        }
+        .promo-chart-canvas {
+            cursor: pointer;
+        }
+        .interactive-chart-canvas {
+            cursor: pointer;
+        }
+        .tab-button {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .tab-button.active {
+            background-color: #B1A08D;
+            color: white;
+        }
+        .tab-button:not(.active) {
+            background-color: #FFFFFF;
+            color: #544E49;
+        }
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid #E2D5B6;
+            border-radius: 0.25rem;
+            padding: 0.25rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center items-center h-16">
+                <div class="flex space-x-6 md:space-x-10 text-sm md:text-base font-medium text-gray-600">
+                    <a href="#diagnosis" class="nav-link">1. 긴급 진단</a>
+                    <a href="#solution" class="nav-link">2. 전략 탐색</a>
+                    <a href="#core-strategy" class="nav-link">3. 핵심 전략</a>
+                    <a href="#roadmap" class="nav-link">4. 실행 계획</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+
+        <header class="text-center my-12 md:my-16">
+            <h1 class="text-4xl md:text-5xl font-black text-[#262423] leading-tight">긴급 경영 진단 및 흑자 전환 전략</h1>
+            <p class="text-lg text-gray-600 mt-4 max-w-3xl mx-auto">7개월 연속 적자라는 위기 상황을 명확히 진단하고, 데이터에 기반한 프로모션 및 멤버십 전략을 통해 지속 가능한 성장 모델을 구축합니다.</p>
+        </header>
+
+        <section id="diagnosis" class="mb-16 md:mb-24 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">1. 긴급 진단: 우리는 어디에 서 있는가?</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-12">지난 8개월간 매출은 지속적으로 하락하며 적자 폭이 심화되었습니다. 아래 차트의 **굵은 갈색선은 이익과 손실을 가르는 '0원 기준선'**이며, **검은 점선은 매월 달성해야 했던 손익분기점(BEP) 목표**입니다. 실제 매출(파란색 선)이 목표선을 크게 밑돌며, 순이익(붉은색 선)이 적자 영역에 머무는 것을 통해 위기의 심각성을 한눈에 파악할 수 있습니다.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="kpi-card">
+                    <div class="kpi-value text-red-600">(¥715,204)</div>
+                    <div class="kpi-label">누적 순손실 (8개월)</div>
+                </div>
+                <div class="kpi-card">
+                    <div id="bep-rate-value" class="kpi-value text-red-600">52.7%</div>
+                    <div id="bep-rate-label" class="kpi-label">4월, 목표(BEP) 대비 매출 달성률</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1">
+                <div class="chart-container h-96">
+                    <canvas id="salesProfitChart" class="interactive-chart-canvas"></canvas>
+                </div>
+                 <p class="text-center text-sm text-gray-500 mt-2">💡 위 차트의 파란색 막대를 클릭하여 월별 목표 달성률을 확인해 보세요.</p>
+            </div>
+        </section>
+
+        <section id="solution" class="mb-16 md:mb-24 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">2. 전략 탐색: 어떤 프로모션이 '진짜 이익'을 남기는가?</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-12">모든 프로모션은 목적이 다릅니다. 아래에서 원하는 **'전략 목표'**를 선택하여, 각 목표에 특화된 프로모션의 내용과 수익성을 직접 비교하고 최적의 조합을 찾아보십시오.</p>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div id="promo-tabs" class="flex justify-center items-center space-x-2 md:space-x-4 mb-8">
+                    <button class="tab-button" data-goal="acquisition">고객 유입 (충격 요법)</button>
+                    <button class="tab-button" data-goal="profitability">수익성 개선 (체질 개선)</button>
+                    <button class="tab-button" data-goal="loyalty">고객 락인 (단골 확보)</button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div id="promo-details" class="flex flex-col justify-center">
+                    </div>
+                    <div class="min-h-[350px] md:min-h-[400px]">
+                        <canvas id="promoChart" class="promo-chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="core-strategy" class="mb-16 md:mb-24 scroll-mt-24">
+             <h2 class="text-3xl font-bold text-center mb-4">3. 핵심 전략: 충전식 멤버십 완전 분석</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-12">위기 극복의 가장 강력한 무기는 '충전식 멤버십'입니다. 아래 시뮬레이터를 통해 각 등급별 판매 수량을 직접 조절하며, 목표 달성을 위한 최적의 판매 조합을 찾아보십시오.</p>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
+                <h3 class="text-xl font-bold mb-6 text-center">멤버십 판매 계획 시뮬레이터</h3>
+                <div class="grid grid-cols-1 xl:grid-cols-5 gap-8">
+                    <div class="xl:col-span-3 overflow-x-auto">
+                         <table id="membership-table" class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>등급</th>
+                                    <th>판매가</th>
+                                    <th>보너스 혜택</th>
+                                    <th>건당 이익(률)</th>
+                                    <th class="highlight-col">판매 수량</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>VVIP (파트너)</td>
+                                    <td>¥1,000</td>
+                                    <td>+¥500 (50%)</td>
+                                    <td>¥644.5 <span class="profit-rate">(64.5%)</span></td>
+                                    <td class="highlight-col"><input class="quantity-input" type="number" id="q-vvip" value="50" min="0"></td>
+                                </tr>
+                                 <tr>
+                                    <td>VIP (골드)</td>
+                                    <td>¥500</td>
+                                    <td>+¥150 (30%)</td>
+                                    <td>¥346.0 <span class="profit-rate">(69.2%)</span></td>
+                                    <td class="highlight-col"><input class="quantity-input" type="number" id="q-vip" value="100" min="0"></td>
+                                </tr>
+                                 <tr>
+                                    <td>Family (실버)</td>
+                                    <td>¥300</td>
+                                    <td>+¥60 (20%)</td>
+                                    <td>¥214.7 <span class="profit-rate">(71.6%)</span></td>
+                                    <td class="highlight-col"><input class="quantity-input" type="number" id="q-family" value="250" min="0"></td>
+                                </tr>
+                                 <tr>
+                                    <td>Welcome (브론즈)</td>
+                                    <td>¥100</td>
+                                    <td>+¥10 (10%)</td>
+                                    <td>¥73.9 <span class="profit-rate">(73.9%)</span></td>
+                                    <td class="highlight-col"><input class="quantity-input" type="number" id="q-welcome" value="400" min="0"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                         <div class="grid grid-cols-2 gap-4 mt-4 bg-gray-50 p-4 rounded-lg">
+                            <div class="text-center">
+                                <div class="text-sm text-gray-500">총 판매 수량</div>
+                                <div id="total-quantity" class="text-2xl font-bold">800장</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-sm text-gray-500">총 현금 유입</div>
+                                <div id="total-cash" class="text-2xl font-bold">¥215,000</div>
+                            </div>
+                             <div class="text-center col-span-2 mt-2">
+                                <div class="text-sm text-gray-500">총 예상 이익</div>
+                                <div id="total-profit" class="text-3xl font-bold text-green-600">¥150,062</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="xl:col-span-2 chart-container h-96">
+                        <canvas id="membershipChart"></canvas>
+                        <p class="text-center text-xs text-gray-500 mt-2">등급별 총 예상 이익 기여도</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="risk-card rounded-lg p-6 md:p-8">
+                 <h3 class="text-xl font-bold mb-4 text-[#C77700]">⚠️ 왕홍(网红) 마케팅 수수료 시뮬레이터</h3>
+                <p class="text-gray-700 text-sm mb-4">왕홍에게 지급하는 수수료는 전체 멤버십 수익성에 직접적인 영향을 미칩니다. 아래 슬라이더를 움직여 수수료율(0%~30%)에 따른 최종 수익률 변화를 직접 시뮬레이션하고 최적의 정책을 결정하십시오.</p>
+                <div class="mb-6">
+                    <label for="commission-slider" class="block text-sm font-bold mb-2">왕홍 판매 수수료율: <span id="commission-value" class="text-lg font-black text-[#B1A08D]">15%</span></label>
+                    <input id="commission-slider" type="range" min="0" max="30" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#B1A08D]">
+                </div>
+                <div class="overflow-x-auto bg-white/50 rounded-md">
+                    <table class="custom-table w-full">
+                        <thead>
+                             <tr>
+                                <th>등급</th>
+                                <th>판매가</th>
+                                <th>수수료</th>
+                                <th>최종 이익</th>
+                                <th>최종 수익률</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commission-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-12">4. 실행 계획: 흑자 전환을 위한 3단계 로드맵</h2>
+            <div class="timeline max-w-3xl mx-auto">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold text-[#544E49] mb-2">Phase 1: 총력 홍보 및 고객 재유입 (D-7 ~ D+7)</h3>
+                    <p class="text-gray-600">매장이 새로워졌음을 각인시키고 떠나간 고객의 발길을 되돌립니다. '음료 1+1 이벤트'로 이슈를 만들고, 'SNS 인증' 및 '친구 추천 쿠폰'으로 바이럴을 유도하며, '충전식 멤버십 카드' 판매를 개시하여 초기 운영 자금을 확보합니다.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold text-[#544E49] mb-2">Phase 2: 가치 전환 및 수익화 (Week 2 ~ Week 4)</h3>
+                    <p class="text-gray-600">유입된 고객을 수익으로 전환시킵니다. '수익성 높은 세트 메뉴'와 '시간대별 할인'을 통해 객단가를 높이고 브런치 매장으로의 이미지를 굳힙니다.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <h3 class="text-xl font-bold text-[#544E49] mb-2">Phase 3: 충성 고객 확보 및 안정화 (Month 2 이후)</h3>
+                    <p class="text-gray-600">단골 고객을 '찐팬'으로 만들어 안정적인 매출 구조를 구축합니다. '개선된 스탬프 카드'로 재방문 동기를 부여하고, '기업/학교 제휴'로 단체 고객을 확보하며, '원데이 클래스' 등 특별한 브랜드 경험을 제공합니다.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="text-center my-12">
+        <p class="text-sm text-gray-500">2025. 6. 22. 경영 전략 분석팀</p>
+    </footer>
+
+    <script>
+        const FONT_COLOR = '#262423';
+        const GRID_COLOR = '#E2D5B6';
+        const PALETTE = {
+            dark: '#262423',
+            brown: '#544E49',
+            lightBrown: '#B1A08D',
+            beige: '#E2D5B6',
+            cream: '#F7F3E3',
+        };
+        const ACCENT_PALETTE = {
+            red: '#d9534f',
+            green: '#5cb85c',
+            blue: '#428bca',
+            yellow: '#f0ad4e',
+            orange: '#e67e22'
+        };
+        
+        const defaultTooltipOptions = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                              return label.join(' ');
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        const salesProfitCtx = document.getElementById('salesProfitChart').getContext('2d');
+        const bepLineData = Array(8).fill(398575);
+        const salesData = [633736, 366290, 267209, 252095, 252654, 234256, 210175, 191181];
+
+        const salesProfitChart = new Chart(salesProfitCtx, {
+            type: 'bar',
+            data: {
+                labels: ['10월', '11월', '12월', '1월', '2월', '3월', '4월', '5월'],
+                datasets: [
+                {
+                    label: '판매액',
+                    data: salesData,
+                    backgroundColor: ACCENT_PALETTE.blue,
+                    borderColor: ACCENT_PALETTE.blue,
+                    yAxisID: 'ySales',
+                    order: 2,
+                }, 
+                {
+                    label: '순이익 (적자)',
+                    data: [36598, -72283, -153609, -63098, -93029, -103510, -80581, -104671],
+                    borderColor: ACCENT_PALETTE.red,
+                    backgroundColor: 'rgba(217, 83, 79, 0.1)',
+                    type: 'line',
+                    fill: true,
+                    tension: 0.3,
+                    yAxisID: 'yProfit',
+                    order: 1
+                },
+                {
+                    label: '손익분기점(BEP) 목표',
+                    data: bepLineData,
+                    borderColor: PALETTE.dark,
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0,
+                    type: 'line',
+                    yAxisID: 'ySales',
+                    order: 0
+                }]
+            },
+            options: {
+                ...defaultTooltipOptions,
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const activeElement = elements[0];
+                        if(activeElement.datasetIndex === 0) { // Only trigger on sales bars
+                            const index = activeElement.index;
+                            const monthLabel = salesProfitChart.data.labels[index];
+                            const monthlySale = salesProfitChart.data.datasets[0].data[index];
+                            const bepTarget = bepLineData[index];
+                            const achievementRate = (monthlySale / bepTarget) * 100;
+                            
+                            document.getElementById('bep-rate-value').textContent = `${achievementRate.toFixed(1)}%`;
+                            document.getElementById('bep-rate-label').textContent = `${monthLabel}, 목표(BEP) 대비 매출 달성률`;
+                        }
+                    }
+                },
+                plugins: { ...defaultTooltipOptions.plugins, legend: { position: 'top' } },
+                scales: {
+                    x: { grid: { display: false } },
+                    ySales: {
+                        type: 'linear',
+                        position: 'left',
+                        grid: { 
+                            color: GRID_COLOR,
+                            zeroLineColor: PALETTE.brown,
+                            zeroLineWidth: 2
+                        },
+                        ticks: { callback: value => `¥${Math.round(value/10000)}만` }
+                    },
+                    yProfit: {
+                        type: 'linear',
+                        position: 'right',
+                        grid: { 
+                            drawOnChartArea: false,
+                        },
+                         ticks: { callback: value => `¥${Math.round(value/10000)}만` }
+                    }
+                }
+            }
+        });
+
+        const promotionDataByGoal = {
+            acquisition: [
+                { name: '음료 1+1 이벤트', profit: 8.84, effect: '가장 강력한 초기 바이럴 및 재방문 유도 효과. "공짜"라는 강력한 인센티브 제공.', risk: '수익성 악화, 체리피커 유입', recommendation: '오픈 후 첫 7일간 집중 운영하여 고객 트래픽 극대화.', color: ACCENT_PALETTE.orange },
+                { name: 'SNS 인증 시, 시그니처 증정', profit: -13.70, effect: '신뢰도 높은 광고 콘텐츠 확보', risk: '원가 부담, 저조한 참여율', recommendation: '상시 병행, 원가 높은 메뉴(잠봉뵈르) 증정으로 참여 가치 높임.', color: ACCENT_PALETTE.red },
+                { name: '★돌발 뽑기 이벤트', profit: -3.53, effect: '재미와 기대감으로 자발적인 줄서기 및 바이럴 유도.', risk: '경품 비용 부담, 낮은 당첨 확률로 인한 고객 불만.', recommendation: '구매 고객 대상, 영수증 번호 추첨 또는 간단한 뽑기 기계 운영. 경품은 할인권, 디저트 증정 등 다양하게 구성.', color: ACCENT_PALETTE.yellow }
+            ],
+            profitability: [
+                { name: '★수익성 높은 세트 메뉴', profit: 17.42, effect: '객단가 상승 및 수익성 방어. 고객에게 할인 혜택 제공.', risk: '인기 없는 조합일 경우 판매 저조', recommendation: 'POS 데이터 기반으로 인기 조합(소금빵+아메리카노 등)을 개발하여 상시 운영.', color: ACCENT_PALETTE.green },
+                { name: '시간대별 타겟 할인', profit: '할인율↓', effect: '유휴 시간대 매출 창출 및 운영 효율 증대', risk: '고객들이 할인 시간만 기다리는 부작용', recommendation: '오후 2-5시 등 특정 시간대에 한정하여 운영.', color: ACCENT_PALETTE.blue },
+            ],
+            loyalty: [
+                { name: '★개선된 스탬프 카드', profit: '높음', effect: '빠른 보상으로 재방문 동기 강력 부여', risk: '복잡한 관리, 어뷰징 가능성', recommendation: '5회(베이커리), 10회(음료)로 중간 목표를 설정하여 고객의 성취감 자극.', color: ACCENT_PALETTE.green },
+                { name: '★요일별 한정판 메뉴', profit: 25.18, effect: '"오늘만 구매 가능"이라는 희소성으로 특정 요일 재방문 강력 유도.', risk: '해당 요일에만 고객 편중, 재고 예측 실패 시 고객 불만 발생.', recommendation: '마진 높은 시그니처 메뉴를 "금요일 한정 50개" 등으로 판매하여 충성 고객 확보.', color: ACCENT_PALETTE.orange },
+                { name: '친구 추천 "더블업" 쿠폰', profit: -7.06, effect: '저비용 신규 고객 확장', risk: '어뷰징 가능성', recommendation: '추천인/피추천인 모두에게 혜택 제공.', color: ACCENT_PALETTE.red }
+            ]
+        };
+        
+        const promoDetailsContainer = document.getElementById('promo-details');
+        const promoCtx = document.getElementById('promoChart').getContext('2d');
+        let currentGoal = 'acquisition';
+
+        const promoChart = new Chart(promoCtx, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        updatePromoDetails(index, currentGoal);
+                    }
+                },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: GRID_COLOR }, ticks: { callback: value => typeof value === 'number' ? `¥${value}`: value } },
+                    y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+
+        function updatePromoDetails(index, goalKey) {
+            const promo = promotionDataByGoal[goalKey][index];
+            let profitText = typeof promo.profit === 'number' ? `¥${promo.profit.toFixed(2)}` : promo.profit;
+            
+            promoDetailsContainer.innerHTML = `
+                <h3 class="text-2xl font-bold mb-2" style="color: ${promo.color};">${promo.name}</h3>
+                <dl class="text-sm">
+                    <dt class="font-bold mt-4">기대 효과:</dt>
+                    <dd class="text-gray-600">${promo.effect}</dd>
+                    <dt class="font-bold mt-3">핵심 리스크:</dt>
+                    <dd class="text-gray-600">${promo.risk}</dd>
+                    <dt class="font-bold mt-3">추천 실행 방안:</dt>
+                    <dd class="text-gray-600">${promo.recommendation}</dd>
+                </dl>
+                <div class="mt-auto pt-4 border-t border-gray-200 mt-4">
+                    <div class="text-lg font-bold">건당 공헌이익</div>
+                    <div class="text-4xl font-black" style="color: ${promo.color};">${profitText}</div>
+                </div>
+            `;
+        }
+
+        function updateSectionForGoal(goalKey) {
+            currentGoal = goalKey;
+            const data = promotionDataByGoal[goalKey];
+            
+            promoChart.data.labels = data.map(p => p.name);
+            promoChart.data.datasets[0].data = data.map(p => typeof p.profit === 'number' ? p.profit : 0);
+            promoChart.data.datasets[0].backgroundColor = data.map(p => p.color);
+            promoChart.update();
+            
+            updatePromoDetails(0, goalKey);
+            
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.goal === goalKey) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        document.getElementById('promo-tabs').addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-button')) {
+                const goal = e.target.dataset.goal;
+                updateSectionForGoal(goal);
+            }
+        });
+
+        updateSectionForGoal('acquisition');
+
+        const membershipCtx = document.getElementById('membershipChart').getContext('2d');
+        const membershipTiersData = [
+            { id: 'vvip', name: 'VVIP', price: 1000, profitPerCard: 644.5, color: ACCENT_PALETTE.green },
+            { id: 'vip', name: 'VIP', price: 500, profitPerCard: 345.95, color: ACCENT_PALETTE.blue },
+            { id: 'family', name: 'Family', price: 300, profitPerCard: 214.68, color: ACCENT_PALETTE.yellow },
+            { id: 'welcome', name: 'Welcome', price: 100, profitPerCard: 73.93, color: ACCENT_PALETTE.orange }
+        ];
+
+        const membershipChart = new Chart(membershipCtx, {
+            type: 'doughnut',
+            data: {
+                labels: membershipTiersData.map(t => t.name),
+                datasets: [{
+                    label: '총 예상 이익',
+                    data: [],
+                    backgroundColor: membershipTiersData.map(t => t.color),
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'CNY' }).format(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+
+        function updateMembershipAnalysis() {
+            let totalQuantity = 0;
+            let totalCash = 0;
+            let totalProfit = 0;
+            const profitByTier = [];
+
+            membershipTiersData.forEach(tier => {
+                const quantityInput = document.getElementById(`q-${tier.id}`);
+                const quantity = parseInt(quantityInput.value) || 0;
+                
+                totalQuantity += quantity;
+                totalCash += quantity * tier.price;
+                const tierProfit = quantity * tier.profitPerCard;
+                totalProfit += tierProfit;
+                profitByTier.push(tierProfit);
+            });
+
+            document.getElementById('total-quantity').textContent = `${totalQuantity}장`;
+            document.getElementById('total-cash').textContent = `¥${totalCash.toLocaleString()}`;
+            document.getElementById('total-profit').textContent = `¥${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+
+            membershipChart.data.datasets[0].data = profitByTier;
+            membershipChart.update();
+        }
+        
+        quantityInputs.forEach(input => {
+            input.addEventListener('input', updateMembershipAnalysis);
+        });
+
+        updateMembershipAnalysis();
+
+
+        const commissionSlider = document.getElementById('commission-slider');
+        const commissionValueSpan = document.getElementById('commission-value');
+        const commissionTableBody = document.getElementById('commission-table-body');
+        
+        const commissionTiers = [
+            { name: 'VVIP (파트너)', price: 1000, cost: 355.5 },
+            { name: 'VIP (골드)', price: 500, cost: 154.05 },
+            { name: 'Family (실버)', price: 300, cost: 85.32 },
+            { name: 'Welcome (브론즈)', price: 100, cost: 26.07 }
+        ];
+
+        function updateCommissionTable(rate) {
+            commissionValueSpan.textContent = `${rate}%`;
+            commissionTableBody.innerHTML = '';
+            
+            commissionTiers.forEach(tier => {
+                const commission = tier.price * (rate / 100);
+                const finalProfit = tier.price - tier.cost - commission;
+                const finalProfitRate = (tier.price > 0) ? (finalProfit / tier.price) * 100 : 0;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${tier.name}</td>
+                    <td>¥${tier.price.toFixed(2)}</td>
+                    <td>¥${commission.toFixed(2)}</td>
+                    <td>¥${finalProfit.toFixed(2)}</td>
+                    <td class="${finalProfitRate >= 0 ? 'profit-rate' : 'loss-rate'}">${finalProfitRate.toFixed(1)}%</td>
+                `;`
+                commissionTableBody.appendChild(row);
+            });
+        }
+
+        commissionSlider.addEventListener('input', (event) => {
+            updateCommissionTable(event.target.value);
+        });
+
+        updateCommissionTable(15);
+
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
